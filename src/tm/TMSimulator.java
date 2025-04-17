@@ -10,10 +10,9 @@ import java.util.Scanner;
 public class TMSimulator {
 
     protected int numbStates;
-    protected int startState = 0;
     protected int haltingState;
     protected int numbSymbols;
-    protected int head;
+    protected int pointer;
     protected LinkedList<Integer> tape;
     protected LinkedList<Integer> sigma;
     protected Map<Integer, LinkedList<Transition>> states;
@@ -21,8 +20,33 @@ public class TMSimulator {
     public TMSimulator() {
         tape = new LinkedList<>();
         sigma = new LinkedList<>();
-        head = 0;
         states = new HashMap<>();
+        pointer = 0;
+    }
+
+    private void runSimulation() {
+        int currentState = 0;
+        int iterations = 0;
+        while (currentState < numbStates-1) { //Try to get to haltingState (may add iterations/time limits)
+            int currentTapeValue = tape.get(pointer);
+            currentState = getTransition(currentState, currentTapeValue);
+            iterations++;
+        }
+        printResults();
+    }
+
+    private int getTransition(int currentState, int currentTapeValue) {
+        Transition nextTransition = states.get(currentState).get(currentTapeValue);
+        tape.set(pointer, nextTransition.write_value);
+        if (nextTransition.isForward()) { pointer++; }
+        else { pointer--; }
+        tapeResize();
+        return  nextTransition.next_state;
+    }
+
+    private void tapeResize() {
+        if (pointer >= tape.size() ) { tape.addLast(0); }
+        else if (pointer < 0) { tape.addFirst(0); pointer = 0; }
     }
 
     private void fileParser(String fileName) {
@@ -46,7 +70,8 @@ public class TMSimulator {
                     for(char c : newLine.toCharArray()) {
                         tape.add(Integer.parseInt(String.valueOf(c)));
                     }
-                }
+                } else {tape.add(0);}
+                input.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -81,14 +106,18 @@ public class TMSimulator {
         }
     }
 
+    private void printResults() {
+        for (Integer integer : tape) {
+            System.out.print(integer);
+        }
+        System.out.println();
+    }
+
     public static void main(String[] args) {
 
         TMSimulator simulator = new TMSimulator();
         simulator.fileParser(args[0]);
-        System.out.println("Number of states: " + simulator.numbStates);
-        System.out.println("Number of symbols: " + simulator.numbSymbols);
-        System.out.println("Halting state: " + simulator.haltingState);
-        System.out.println("Starting state: " + simulator.startState);
+        simulator.runSimulation();
 
     }
 }
