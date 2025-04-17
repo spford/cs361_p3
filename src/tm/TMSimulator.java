@@ -107,10 +107,16 @@ public class TMSimulator {
     }
 
     private void printResults() {
+        int output_Length = 0;
+        int sum_of_symbols = 0;
         for (Integer integer : tape) {
             System.out.print(integer);
+            sum_of_symbols += integer;
+            output_Length++;
         }
         System.out.println();
+        System.out.println("output length: " + output_Length);
+        System.out.println("sum of symbols: " + sum_of_symbols);
     }
 
     public static void main(String[] args) {
