@@ -13,12 +13,12 @@ public class TMSimulator {
     protected int haltingState;
     protected int numbSymbols;
     protected int pointer;
-    protected LinkedList<Integer> tape;
+    protected Map<Integer, Integer> tape;
     protected LinkedList<Integer> sigma;
-    protected Map<Integer, LinkedList<Transition>> states;
+    protected Map<Integer, Map<Integer, Transition>> states;
 
     public TMSimulator() {
-        tape = new LinkedList<>();
+        tape = new HashMap<>();
         sigma = new LinkedList<>();
         states = new HashMap<>();
         pointer = 0;
@@ -26,27 +26,19 @@ public class TMSimulator {
 
     private void runSimulation() {
         int currentState = 0;
-        int iterations = 0;
         while (currentState < numbStates-1) { //Try to get to haltingState (may add iterations/time limits)
-            int currentTapeValue = tape.get(pointer);
+            int currentTapeValue = tape.getOrDefault(pointer, 0);
             currentState = getTransition(currentState, currentTapeValue);
-            iterations++;
         }
         printResults();
     }
 
     private int getTransition(int currentState, int currentTapeValue) {
         Transition nextTransition = states.get(currentState).get(currentTapeValue);
-        tape.set(pointer, nextTransition.write_value);
+        tape.put(pointer, nextTransition.write_value);
         if (nextTransition.isForward()) { pointer++; }
         else { pointer--; }
-        tapeResize();
         return  nextTransition.next_state;
-    }
-
-    private void tapeResize() {
-        if (pointer >= tape.size() ) { tape.addLast(0); }
-        else if (pointer < 0) { tape.addFirst(0); pointer = 0; }
     }
 
     private void fileParser(String fileName) {
@@ -54,30 +46,30 @@ public class TMSimulator {
         int currentPosition = 0;
         try {
             Scanner input = new Scanner(new FileInputStream(fileName));
-                setStatesByNumber(Integer.parseInt(input.nextLine()));  //read number of states 0 - (n-1)
-                setSymbolsByNumber(Integer.parseInt(input.nextLine())); //read number of symbols + 0
-                while (currentPosition < (numbSymbols+1) * (numbStates-1)) {    //total number of transitions
-                    for (int i = 0; i <= numbSymbols; i++) { //Every state has number of Symbols + '0' transitions
-                        String newLine = input.nextLine();
-                        String[] tokens = newLine.split(",");
-                        addTransition(tokens, currentState);
-                        currentPosition++;
-                    }
-                    currentState++;
-                }
-                if(input.hasNextLine()) {
+            setStatesByNumber(Integer.parseInt(input.nextLine()));  //read number of states 0 - (n-1)
+            setSymbolsByNumber(Integer.parseInt(input.nextLine())); //read number of symbols + 0
+            while (currentPosition < (numbSymbols+1) * (numbStates-1)) {    //total number of transitions
+                for (int i = 0; i <= numbSymbols; i++) { //Every state has number of Symbols + '0' transitions
                     String newLine = input.nextLine();
-                    for(char c : newLine.toCharArray()) {
-                        tape.add(Integer.parseInt(String.valueOf(c)));
-                    }
-                } else {tape.add(0);}
-                input.close();
+                    String[] tokens = newLine.split(",");
+                    addTransition(tokens, currentState, i);
+                    currentPosition++;
+                }
+                currentState++;
+            }
+            if(input.hasNextLine()) {
+                String newLine = input.nextLine();
+                for (int i = 0; i < newLine.length(); i++) {
+                    tape.put(i, Integer.parseInt(String.valueOf(newLine.charAt(i))));
+                }
+            }
+            input.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    private void addTransition(String[] tokens, int currentState) {
+    private void addTransition(String[] tokens, int currentState, int onSymbol) {
         boolean forward = false;
         int next_state = Integer.parseInt(tokens[0]);
         int write_sym = Integer.parseInt(tokens[1]);
@@ -86,8 +78,8 @@ public class TMSimulator {
             forward = true;
         }
         Transition newTransition = new Transition(next_state,write_sym,forward);
-        states.putIfAbsent(currentState, new LinkedList<>());
-        states.get(currentState).add(newTransition);
+        states.putIfAbsent(currentState, new HashMap<>());
+        states.get(currentState).put(onSymbol, newTransition);
     }
 
     private void setStatesByNumber(int numberOfStates) {
@@ -109,9 +101,15 @@ public class TMSimulator {
     private void printResults() {
         int output_Length = 0;
         int sum_of_symbols = 0;
-        for (Integer integer : tape) {
-            System.out.print(integer);
-            sum_of_symbols += integer;
+        int min = tape.keySet().stream().min(Integer::compareTo).orElse(0);
+        int max = tape.keySet().stream().max(Integer::compareTo).orElse(0);
+
+        System.out.println("output:");
+
+        for (int i = min; i <= max; i++) {
+            int val = tape.getOrDefault(i, 0);
+            System.out.print(val);
+            sum_of_symbols += val;
             output_Length++;
         }
         System.out.println();
