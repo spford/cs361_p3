@@ -39,9 +39,9 @@ public class TMSimulator {
      */
     private void runSimulation() {
         int currentState = 0;
-        while (currentState < numbStates-1) { //Try to get to haltingState (may add iterations/time limits)
-            int currentTapeValue = tape.getOrDefault(pointer, 0);
-            currentState = getTransition(currentState, currentTapeValue);
+        while (currentState != haltingState) { //Try to get to haltingState (may add iterations/time limits)
+            // 2nd parameter is current tape value
+            currentState = getTransition(currentState, tape.getOrDefault(pointer, 0));
         }
         printResults();
     }
@@ -89,8 +89,7 @@ public class TMSimulator {
                 currentState++;
             }
 
-            // Store Input String on tape
-            if(input.hasNextLine()) {
+            if(input.hasNextLine()) {       // Store Input String on tape
                 String newLine = input.nextLine();
                 for (int i = 0; i < newLine.length(); i++) {
                     tape.put(i, Integer.parseInt(String.valueOf(newLine.charAt(i))));
@@ -111,16 +110,9 @@ public class TMSimulator {
      * @param onSymbol - int - Integer symbol to define transition path
      */
     private void addTransition(String[] tokens, int currentState, int onSymbol) {
-        boolean forward = false;    // Move left by default
-        int next_state = Integer.parseInt(tokens[0]);
-        int write_sym = Integer.parseInt(tokens[1]);
-        String move_sym = String.valueOf(tokens[2]);
-        if (move_sym.equals("R")) {
-            forward = true;         // Overwrite move to go right
-        }
-        Transition newTransition = new Transition(next_state,write_sym,forward);
+        boolean forward = String.valueOf(tokens[2]).equals("R");    // False move left, True move right
         states.putIfAbsent(currentState, new HashMap<>());
-        states.get(currentState).put(onSymbol, newTransition);
+        states.get(currentState).put(onSymbol, new Transition(Integer.parseInt(tokens[0]),Integer.parseInt(tokens[1]),forward));
     }
 
     /**
@@ -180,10 +172,8 @@ public class TMSimulator {
     }
 
     public static void main(String[] args) {
-
         TMSimulator simulator = new TMSimulator();
         simulator.fileParser(args[0]);
         simulator.runSimulation();
-
     }
 }
