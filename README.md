@@ -23,6 +23,12 @@ See file0.txt for an example.<br/>
 
 ## Reflection
 
+This project came in a couple of stages. First we focused on an implementation that worked. The original
+algorithms for parsing input files and running the TM worked as expected, but were very slow. We first
+used LinkedLists from the Java library but found they were very slow because of the way they iterate through
+every element on index calls and resizing the LinkedList was expensive. Figuring this data structure was our
+problem we then moved to maps to better reflect the bi-directional infinite tapes. Overall this project was 
+smooth and I actually found building something from scratch more intuitive than some of the earlier projects.
 <br />
 Spencer Ford<br/><br/>
 
