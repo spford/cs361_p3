@@ -14,17 +14,17 @@ Additionally, there is only one halting state and when reached, this program wil
 
 ## Format for Text File to Build/Run Turing Machine
 
-Number of States
-Number of Symbols
-((Number of States - 1)*(Number of States + 1)) Transitions
-Input String for Simulation
+Number of States<br/>
+Number of Symbols<br/>
+((Number of States - 1)*(Number of States + 1)) Transitions<br/>
+Input String for Simulation<br/>
 
-See file0.txt for an example.
+See file0.txt for an example.<br/>
 
 ## Reflection
 
 <br />
-Spencer Ford
+Spencer Ford<br/><br/>
 
 This project came together rather smoothly with Ford's quick thinking of which data structures to use
 from the Java Collections Framework in addition to the quick implementation of how to correctly scan
